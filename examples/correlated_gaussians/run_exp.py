@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+"""run_exp.py: Script to execute in order to produce experiments."""
+
 import subprocess
 
 subprocess.run(["python3", "demo_script_gaussian.py",

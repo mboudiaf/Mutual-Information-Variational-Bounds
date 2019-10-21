@@ -1,9 +1,19 @@
+#!/usr/bin/env python
+
+"""regularizers.py: Where the MI estimators (also used as regularizers) are defined."""
+
+__author__ = "Malik Boudiaf"
+__version__ = "0.1"
+__maintainer__ = "Malik Boudiaf"
+__email__ = "malik-abdelkrim.boudiaf.1@ens.etsmtl.ca"
+__status__ = "Development"
+
 import tensorflow as tf
 import tensorflow_probability as tfp
 tfd = tfp.distributions
 import numpy as np
 from ops import *
-from tqdm import tqdm, trange
+from tqdm import trange
 from critic_architectures import joint_critic, separate_critic
 
 class mi_regularizer(object):
@@ -14,16 +24,16 @@ class mi_regularizer(object):
         self.ema_decay = args.ema_decay
         self.batch_size = args.batch_size
         self.critic_activation = args.critic_activation
-        self.critic_layers = args.critic_layers 
+        self.critic_layers = args.critic_layers
         self.ema_decay = args.ema_decay
         self.critic = eval('{}_critic(args)'.format(args.critic_type))
 
     def nwj(self, x, z):
 
-        T_joint, T_product = self.critic(x, z)     
+        T_joint, T_product = self.critic(x, z)
         mi = tf.reduce_mean(T_joint) - 1 / np.e * tf.reduce_mean(tf.exp(T_product))
         mi_for_grads = mi
-        
+
         return mi, mi_for_grads
 
     def mine(self, x, z):
@@ -32,7 +42,7 @@ class mi_regularizer(object):
 
         E_joint = tf.reduce_mean(T_joint)
         E_product = tf.log(1 / self.batch_size) + tf.reduce_logsumexp(T_product)
-        mi =  E_joint - E_product
+        mi = E_joint - E_product
 
         ema_denominator = tf.Variable(tf.exp(tf.reduce_logsumexp(T_product)))
         ema_denominator -= (1 - self.ema_decay) * (ema_denominator - tf.exp(tf.reduce_logsumexp(T_product)))
@@ -54,7 +64,7 @@ class mi_regularizer(object):
 
         E_joint = tf.reduce_mean(T_joint)
         E_product = tf.log(1 / self.batch_size) + tf.reduce_mean(tf.reduce_logsumexp(tf.add(T_joint, T_product), axis=1))
-        
+
         mi = E_joint - E_product
         mi_for_grads = mi
 
@@ -66,14 +76,10 @@ class mi_regularizer(object):
         vars['critic'] = [var for var in tf.global_variables() if 'critic' in var.name]
         return vars
 
-
     def __call__(self, x, z, optimizer=None):
 
         train_ops = {}
         quantities = {}
-
-        dim_x = x.get_shape().as_list()[1:]
-        dim_z = z.get_shape().as_list()[1:]
 
         mi, mi_for_grads = eval("self.{}(x,z)".format(self.regu_name))
 
@@ -82,7 +88,7 @@ class mi_regularizer(object):
         if optimizer is None:
             optimizer = tf.train.AdamOptimizer(learning_rate=self.critic_lr)
         train_ops['critic'] = optimizer.minimize(- mi_for_grads, var_list=self.vars['critic'])
-        
+
         return train_ops, quantities
 
     def get_info(self, sess, feed_dict, quantities, step):
@@ -122,8 +128,8 @@ class mi_regularizer(object):
                 eval_size = x_data.shape[0]
             x_eval = x_data[:eval_size]
             z_eval = z_data[:eval_size]
-            eval_feed_dict = {x_ph:x_eval, z_ph:z_eval}
-            mi_eval = sess.run(quantities['mi'], feed_dict=feed_dict)
+            eval_feed_dict = {x_ph: x_eval, z_ph: z_eval}
+            mi_eval = sess.run(quantities['mi'], feed_dict=eval_feed_dict)
         return mi_eval
 
 

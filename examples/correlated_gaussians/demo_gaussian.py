@@ -1,15 +1,13 @@
+#!/usr/bin/env python
+
+"""demo_gaussian.py: Showcase of how to use mutual information as an estimator. """
+
 import numpy as np
-import tensorflow as tf
-from tqdm import tqdm , trange
-import itertools
 import argparse
-import math
-import time
-import tensorflow.contrib.slim as slim
 import matplotlib.pyplot as plt
 import sys
 sys.path.append("../../")
-from regularizers import *
+from regularizers import mi_regularizer
 
 def get_args():
 
@@ -19,37 +17,36 @@ def get_args():
     parser.add_argument('--regularizer', type=str, required=True)
 
     # Architecture hyperparm
-    parser.add_argument('--critic_layers', type=int, nargs='+', default=[256, 256, 256], 
-        help='Layers defining the critic')
+    parser.add_argument('--critic_layers', type=int, nargs='+', default=[256, 256, 256],
+                        help='Layers defining the critic')
     parser.add_argument('--critic_activation', type=str, default='relu')
     parser.add_argument('--critic_lr', type=float, default=1e-4,
-        help='Learning Rate used to train the critic network')
+                        help='Learning Rate used to train the critic network')
     parser.add_argument('--critic_type', type=str, default='joint',
-        help='Type of critic network used between "joint" or "separate"')
-    
+                        help='Type of critic network used between "joint" or "separate"')
+
     # Training hyperparams
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--ema_decay', type=float, default=0.)
-    parser.add_argument('--update_for', type=int, default=1)
+    parser.add_argument('--ema_decay', type=float, default=0.99)
     parser.add_argument('--data_size', type=int, default=100000)
 
 
     # Data hyperparams
     parser.add_argument('--rho_range', nargs=2, type=float, default=[-0.95, 0.95],
-        help='Range for the correlation coefficient Rho')
+                        help='Range for the correlation coefficient Rho')
     parser.add_argument('--rho_points',type=float, default=20,
-        help='Number of points used to discretize the interval defined by --rho_range')
+                        help='Number of points used to discretize the interval defined by --rho_range')
     parser.add_argument('--dim_x', type=list, default=[20],
-        help='Dimension for X and Z RV')
+                        help='Dimension for X and Z RV')
 
 
 
     # Display hyperparam
     parser.add_argument("--print_every", type=int, default=0.01, 
-        help="In fraction of n_epochs_bound, training information refresh cadency")
+                        help="In fraction of n_epochs_bound, training information refresh cadency")
     parser.add_argument("--plot_dir", type=str, default='plots/', 
-        help="Where to save the plots")
+                        help="Where to save the plots")
 
     args = parser.parse_args()
     return args
@@ -79,7 +76,7 @@ def run(args):
     true_mis = []
     estimated_mis = []
     for rho in rho_values:
-        x, z , mi = generate_correlated_gaussian(args.data_size, rho, args.dim_x[0])
+        x, z, mi = generate_correlated_gaussian(args.data_size, rho, args.dim_x[0])
         regularizers = mi_regularizer(args, args.regularizer)
         estimated_mis.append(regularizers.fit(x, z, args.batch_size, args.epochs))
         true_mis.append(mi)

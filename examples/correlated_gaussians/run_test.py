@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+"""run_tests.py: Script to execute in order to make sure basic features work properly."""
+
 import os
 import itertools
 
