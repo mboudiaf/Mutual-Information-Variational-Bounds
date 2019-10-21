@@ -1,13 +1,17 @@
+#!/usr/bin/env python
+
+"""run_exp.py: Script to execute in order to make sure basic features work properly."""
+
 import os
 import itertools
 
-beta = [0.5, 1, 1.5]
-unroll_critic = [1, 5, 10]
+regularizers = ["mine"]
+critic_types = ["joint", "separate"]
 
-comb_test_params = itertools.product(beta, unroll_critic)
-labels_test_params = ['beta', 'unroll_critic']
+comb_test_params = itertools.product(regularizers, critic_types)
+labels_test_params = ['regularizer', 'critic_type']
 
-fixed_params = {"epochs": 25, "data_size":100000}
+fixed_params = {"epochs": 2, "data_size":10000}
 
 for param_comb in comb_test_params:
     command_line = "python3 demo_script_gan.py "
@@ -18,4 +22,4 @@ for param_comb in comb_test_params:
             command_line += "--{} {} ".format(labels_test_params[i], param)
     print(command_line)
     os.system(command_line)
-print("All experiments were successfully carried out. ")
+print("All tests were successfully passed. ")

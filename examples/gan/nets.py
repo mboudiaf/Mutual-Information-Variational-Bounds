@@ -1,14 +1,17 @@
+#!/usr/bin/env python
+
+"""nets.py: Generator and Discriminator networks are defined here."""
+
 import tensorflow as tf
-import tensorflow.contrib as tc
 import tensorflow.contrib.layers as tcl
 
 class G_mlp(object):
-    
+
     def __init__(self, output_dim, batch_norm):
         self.name = 'G_mlp'
         self.output_dim = output_dim
         self.batch_norm = batch_norm
-    
+
     def dense_batch_relu(self, x, is_training, scope):
         with tf.variable_scope(scope, reuse=tf.AUTO_REUSE):
             h = tf.contrib.layers.fully_connected(x, 500,
@@ -42,11 +45,10 @@ class D_mlp(object):
         with tf.variable_scope(self.name, reuse=tf.AUTO_REUSE) as vs:
             d = x
             for _ in range(3):
-               d = tcl.fully_connected(d, 400, activation_fn=tf.nn.relu)
+                d = tcl.fully_connected(d, 400, activation_fn=tf.nn.relu)
             logit = tcl.fully_connected(d, 1, activation_fn=None)
         return logit
 
     @property
     def vars(self):
         return [var for var in tf.trainable_variables() if self.name in var.name]
-

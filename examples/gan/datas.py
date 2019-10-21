@@ -1,16 +1,12 @@
-import os,sys
-from PIL import Image
-import scipy.misc
+#!/usr/bin/env python
+
+"""datas.py: Data used in the experiments are defined here."""
+
 import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
-from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from tensorflow.examples.tutorials.mnist import input_data
 import itertools
-
-
 
 class spiral2D():
     def __init__(self, noise_std, random_state):
@@ -24,7 +20,7 @@ class spiral2D():
 
         xy1, xy2, xy3 = self.generate_spiral(data_size)
         xy = np.concatenate([xy1, xy2, xy3], axis=0)
-        xy += self.std*self.random_state.randn(xy.shape[0], xy.shape[1])
+        xy += self.std * self.random_state.randn(xy.shape[0], xy.shape[1])
 
         self.random_state.shuffle(xy)
 
@@ -80,7 +76,7 @@ class spiral2D():
         if samples_proposal is not None:
             plt.scatter(samples_proposal[:,0], samples_proposal[:,1])
         plt.scatter(true_x, true_y, 1, c='black', label='data samples')
-        
+
         return fig
 
     def metrics(self, samples_G):

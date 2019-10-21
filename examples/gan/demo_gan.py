@@ -1,20 +1,22 @@
+#!/usr/bin/env python
+
+"""demo_gan.py: Showcase of how to use mutual information as a regularization term."""
+
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import csv
 import argparse
-import os, sys
-from nets import *
-from datas import *
-from tqdm import tqdm , trange
-import itertools
+import os
 import sys
+from nets import G_mlp, D_mlp
+from datas import *
+from tqdm import trange
+
 sys.path.append("../../")
-from regularizers import *
+from regularizers import mi_regularizer
 
 
 def get_args():
@@ -80,7 +82,7 @@ def get_args():
         help="Where to save the plots")
     parser.add_argument("--labels_test_params", type=str, nargs='+', default=['seed'], 
         help="Which parameters are being looped over")
-    
+
 
     args = parser.parse_args()
     return args
@@ -91,16 +93,15 @@ def sample_z(random_state, m, n):
     #return random_state.randn(m, n)
 
 def perform_adaptive_clipping(regul_term, variables, grad_upper_bound):
-        g_r = tf.gradients(regul_term, variables)
-        g_r_norm = tf.norm([tf.norm(grad) for grad in g_r])
-        coef = tf.minimum(g_r_norm, grad_upper_bound) / g_r_norm
-        clipped_regul_term = tf.stop_gradient(coef) * regul_term
-        return clipped_regul_term
+    g_r = tf.gradients(regul_term, variables)
+    g_r_norm = tf.norm([tf.norm(grad) for grad in g_r])
+    coef = tf.minimum(g_r_norm, grad_upper_bound) / g_r_norm
+    clipped_regul_term = tf.stop_gradient(coef) * regul_term
+    return clipped_regul_term
 
 
 class CGAN():
 
-    
     def __init__(self, args, generator, discriminator, data, regularizers, random_state):
 
         self.generator = generator
@@ -126,14 +127,14 @@ class CGAN():
         self.x = tf.placeholder(tf.float32, shape=[None, self.x_dim], name='Input')
         self.z = tf.placeholder(tf.float32, shape=[None, self.z_dim], name='Latent')
         self.is_training = tf.placeholder(tf.bool, shape=[], name="is_training")
-        
+
         latent_vec = self.z
 
         self.G_sample = self.generator(latent_vec, self.is_training)
         self.D_real = self.discriminator(self.x)
         self.D_fake = self.discriminator(self.G_sample)
-        
-        self.D_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake, labels= tf.zeros_like(self.D_fake))) + tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_real, labels=tf.ones_like(self.D_real)))
+
+        self.D_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake, labels=tf.zeros_like(self.D_fake))) + tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_real, labels=tf.ones_like(self.D_real)))
         self.G_loss_unreg = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake, labels=tf.ones_like(self.D_fake)))
         disc_optmizer = tf.train.AdamOptimizer(learning_rate=self.disc_lr, beta1=self.beta1)
         gen_optimizer = tf.train.AdamOptimizer(learning_rate=self.gen_lr, beta1=self.beta1)
@@ -141,8 +142,6 @@ class CGAN():
         gu_and_vars = [(grad, var) for grad, var in gu_and_vars]
         self.gu_norm = tf.norm(tf.convert_to_tensor([tf.norm(grad) for grad, var in gu_and_vars if grad is not None]))
 
-        self.update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-        
         self.G_solver_unreg = gen_optimizer.apply_gradients(gu_and_vars)
         self.D_solver = disc_optmizer.minimize(self.D_loss, var_list=self.discriminator.vars)
 
@@ -187,7 +186,7 @@ class CGAN():
                     self.sess.run(self.G_solver_reg, feed_dict={self.z: z, self.is_training:True})
                 else:
                     self.sess.run(self.G_solver_unreg, feed_dict={self.z: z, self.is_training:True})
-                
+
                 # Update the bound from regularizer ===========================================
                 if self.regularizer is not None:
                     for _ in range(self.unroll_critic):
@@ -199,7 +198,7 @@ class CGAN():
                 if iteration % 10 == 0:
                     D_loss_curr, G_loss_curr, gu_norm_curr = self.sess.run([self.D_loss, self.G_loss_unreg, self.gu_norm], feed_dict={self.x: X_batch, self.z: z, self.is_training:False})
                     iter_bar.set_description('Iter: {}; D loss: {:.4}; G_loss: {:.4}; |gu|: {:.4}'.format(epoch, D_loss_curr, G_loss_curr, gu_norm_curr))
-                    
+
                     if self.regularizer is not None:
                         values = self.sess.run(list(self.Reg_quantities.values()), feed_dict={self.is_training: False, self.z: z})
                         iter_bar.set_description(' ; '.join(["{}: {}".format(name,value) for name, value in zip(self.Reg_quantities.keys(),values)]))
@@ -216,8 +215,6 @@ class CGAN():
                 writer.writerow(metrics)
             fig_count += 1
             plt.close(fig)
-
-
 
 if __name__ == '__main__':
 
