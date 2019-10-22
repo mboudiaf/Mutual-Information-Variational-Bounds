@@ -2,6 +2,7 @@
 
 """demo_gaussian.py: Showcase of how to use mutual information as an estimator. """
 
+import os
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
@@ -35,7 +36,7 @@ def get_args():
     # Data hyperparams
     parser.add_argument('--rho_range', nargs=2, type=float, default=[-0.95, 0.95],
                         help='Range for the correlation coefficient Rho')
-    parser.add_argument('--rho_points',type=float, default=20,
+    parser.add_argument('--rho_points', type=float, default=20,
                         help='Number of points used to discretize the interval defined by --rho_range')
     parser.add_argument('--dim_x', type=list, default=[20],
                         help='Dimension for X and Z RV')
@@ -53,13 +54,13 @@ def get_args():
 
 def generate_correlated_gaussian(data_size, rho, dim_x):
     I = np.eye(dim_x)
-    cov = np.block([[I, rho*I],[rho*I, I]])
-    mu = np.zeros(2*dim_x)
+    cov = np.block([[I, rho * I], [rho * I, I]])
+    mu = np.zeros(2 * dim_x)
     xz = np.random.multivariate_normal(mu, cov, data_size)
     x = xz[:, :dim_x]
     z = xz[:, dim_x:]
-    mi = -dim_x/2*np.log(1-rho**2)
-    return x, z , mi
+    mi = -dim_x / 2 * np.log(1 - rho**2)
+    return x, z, mi
 
 def plot(regularizer_name, rho_values, estimated_mis, true_mis, save_path):
     plt.plot(rho_values, estimated_mis, label=regularizer_name)
@@ -80,6 +81,8 @@ def run(args):
         regularizers = mi_regularizer(args, args.regularizer)
         estimated_mis.append(regularizers.fit(x, z, args.batch_size, args.epochs))
         true_mis.append(mi)
+    if not os.path.exists(args.plot_dir):
+        os.makedirs(args.plot_dir)
     plot(args.regularizer, rho_values, estimated_mis, true_mis, "{}/{}.png".format(args.plot_dir, args.regularizer))
 
 
