@@ -130,6 +130,7 @@ class joint_critic(object):
 class separate_critic(object):
 
     def __init__(self, args):
+
         self.dim_x = args.dim_x
         self.dim_z = args.dim_z
         self.batch_size = args.batch_size

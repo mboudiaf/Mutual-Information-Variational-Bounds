@@ -5,22 +5,25 @@
 import subprocess
 
 subprocess.run(["python3", "demo_gaussian.py",
-                "--regularizer", "nce",
-                "--critic_type", "separate",
-                "--data_size", "100000",
-                "--epochs", "10"
-                ])
-
-subprocess.run(["python3", "demo_gaussian.py",
                 "--regularizer", "mine",
-                "--critic_type", "joint",
+                "--critic_type", "separate",
+                "--ema_decay", "0.",
                 "--data_size", "100000",
                 "--epochs", "10"
                 ])
 
 subprocess.run(["python3", "demo_gaussian.py",
                 "--regularizer", "nwj",
-                "--critic_type", "joint",
+                "--critic_type", "separate",
                 "--data_size", "100000",
                 "--epochs", "10"
                 ])
+
+
+subprocess.run(["python3", "demo_gaussian.py",
+                "--regularizer", "nce",
+                "--critic_type", "separate",
+                "--data_size", "100000",
+                "--epochs", "10"
+                ])
+

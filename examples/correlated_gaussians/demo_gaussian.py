@@ -71,7 +71,6 @@ def plot(regularizer_name, rho_values, estimated_mis, true_mis, save_path):
     plt.savefig(save_path)
 
 def run(args):
-
     # STEP : Loop over all the combinations of parameters we want to try
     rho_values = np.linspace(args.rho_range[0], args.rho_range[1], args.rho_points)
     true_mis = []
@@ -79,7 +78,7 @@ def run(args):
     for rho in rho_values:
         x, z, mi = generate_correlated_gaussian(args.data_size, rho, args.dim_x[0])
         regularizers = mi_regularizer(args, args.regularizer)
-        estimated_mis.append(regularizers.fit(x, z, args.batch_size, args.epochs))
+        estimated_mis.append(regularizers.fit(x, z, args.batch_size, args.epochs, mi))
         true_mis.append(mi)
     if not os.path.exists(args.plot_dir):
         os.makedirs(args.plot_dir)

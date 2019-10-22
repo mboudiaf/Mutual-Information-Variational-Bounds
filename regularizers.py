@@ -50,9 +50,10 @@ class mi_regularizer(object):
             A bias corrected version of mi between x and z.
             Must only be used to get a better gradient estimate of the MI.
         """
-
         T_joint, T_product = self.critic(x, z)
-        mi = tf.reduce_mean(T_joint) - 1 / np.e * tf.reduce_mean(tf.exp(T_product))
+        E_joint = 1/self.batch_size * tf.reduce_sum(T_joint)
+        E_product = 1 / (np.e*(np.prod(T_product.get_shape().as_list())-self.batch_size)) * (tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
+        mi =  E_joint - E_product
         mi_for_grads = mi
 
         return mi, mi_for_grads
@@ -79,10 +80,10 @@ class mi_regularizer(object):
             A bias corrected version of mi between x and z.
             Must only be used to get a better gradient estimate of the MI.
         """
-
         T_joint, T_product = self.critic(x, z)
-        E_joint = tf.reduce_mean(T_joint)
-        E_product = tf.log(1 / self.batch_size) + tf.reduce_logsumexp(T_product)
+
+        E_joint = 1/self.batch_size * tf.reduce_sum(T_joint)
+        E_product = np.log(1 / (np.prod(T_product.get_shape().as_list()) - self.batch_size)) + tf.log(tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
         mi = E_joint - E_product
 
         ema_denominator = tf.Variable(tf.exp(tf.reduce_logsumexp(T_product)))
@@ -116,7 +117,7 @@ class mi_regularizer(object):
 
         T_joint, T_product = self.critic(x, z)
         E_joint = tf.reduce_mean(T_joint)
-        E_product = tf.log(1 / self.batch_size) + tf.reduce_mean(tf.reduce_logsumexp(tf.add(T_joint, T_product), axis=1))
+        E_product = np.log(1 / self.batch_size) + tf.reduce_mean(tf.reduce_logsumexp(tf.add(T_joint, T_product), axis=1))
 
         mi = E_joint - E_product
         mi_for_grads = mi
@@ -169,7 +170,7 @@ class mi_regularizer(object):
         return info
 
 
-    def fit(self, x_data, z_data, batch_size, epochs):
+    def fit(self, x_data, z_data, batch_size, epochs, ground_truth_mi=None):
         """
         Description
         -----------
@@ -210,6 +211,8 @@ class mi_regularizer(object):
                         _ = sess.run(tf.global_variables_initializer(), feed_dict=feed_dict)
                     _ = sess.run(train_ops['critic'], feed_dict=feed_dict) 
                     info = self.get_info(sess, feed_dict, quantities, epoch, i)
+                    if ground_truth_mi is not None:
+                        info.append("true_mi={:.3g}".format(ground_truth_mi))
                     batch_bar.set_description('   '.join(info))
                     mi_batch = sess.run(quantities['mi'], feed_dict=feed_dict)
                     mi_ema -= (1 - 0.9) * (mi_ema - mi_batch)
