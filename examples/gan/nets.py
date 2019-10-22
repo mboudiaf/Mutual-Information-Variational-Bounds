@@ -15,15 +15,15 @@ class G_mlp(object):
     def dense_batch_relu(self, x, is_training, scope):
         with tf.variable_scope(scope, reuse=tf.AUTO_REUSE):
             h = tf.contrib.layers.fully_connected(x, 500,
-                                                  activation_fn = None,
+                                                  activation_fn=None,
                                                   scope='dense')
             if self.batch_norm == True:
                 h = tf.contrib.layers.batch_norm(h,
                                                  decay=0.9,
                                                  scale=True,
-                                                 updates_collections = None,
-                                                 is_training = is_training,
-                                                 scope = 'bn')
+                                                 updates_collections=None,
+                                                 is_training=is_training,
+                                                 scope='bn')
         return tf.nn.leaky_relu(h)
 
     def __call__(self, z, is_training):
@@ -42,7 +42,7 @@ class D_mlp(object):
         self.name = "D_mlp"
 
     def __call__(self, x):
-        with tf.variable_scope(self.name, reuse=tf.AUTO_REUSE) as vs:
+        with tf.variable_scope(self.name, reuse=tf.AUTO_REUSE):
             d = x
             for _ in range(3):
                 d = tcl.fully_connected(d, 400, activation_fn=tf.nn.relu)
