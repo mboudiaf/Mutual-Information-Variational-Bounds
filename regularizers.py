@@ -29,6 +29,27 @@ class mi_regularizer(object):
         self.critic = eval('{}_critic(args)'.format(args.critic_type))
 
     def nwj(self, x, z):
+        """
+        Description
+        -----------
+        An implementation of the f-divergence based MI estimator (NWJ)
+        https://arxiv.org/abs/1606.00709
+
+        Parameters
+        ----------
+        x : Tensor [?, dim_x]
+            Representing a batch of samples from P_X
+        z : Tensor [?, dim_z]
+            Representing a batch of samples from P_Z|X=x
+
+        Returns
+        -------
+        mi : Scalar []
+            An estimate of the MI between x and z
+        mi_for_grads : Scalar []
+            A bias corrected version of mi between x and z.
+            Must only be used to get a better gradient estimate of the MI.
+        """
 
         T_joint, T_product = self.critic(x, z)
         mi = tf.reduce_mean(T_joint) - 1 / np.e * tf.reduce_mean(tf.exp(T_product))
@@ -37,9 +58,29 @@ class mi_regularizer(object):
         return mi, mi_for_grads
 
     def mine(self, x, z):
+        """
+        Description
+        -----------
+        An implementation of the Donsker Varadhan based MI estimator (MINE)
+        https://arxiv.org/abs/1801.04062
+
+        Parameters
+        ----------
+        x : Tensor [?, dim_x]
+            Representing a batch of samples from P_X
+        z : Tensor [?, dim_z]
+            Representing a batch of samples from P_Z|X=x
+
+        Returns
+        -------
+        mi : Scalar []
+            An estimate of the MI between x and z
+        mi_for_grads : Scalar []
+            A bias corrected version of mi between x and z.
+            Must only be used to get a better gradient estimate of the MI.
+        """
 
         T_joint, T_product = self.critic(x, z)
-
         E_joint = tf.reduce_mean(T_joint)
         E_product = tf.log(1 / self.batch_size) + tf.reduce_logsumexp(T_product)
         mi = E_joint - E_product
@@ -51,15 +92,28 @@ class mi_regularizer(object):
         return mi, mi_for_grads
 
     def nce(self, x, z):
-        #circular_permut = tfp.bijectors.Permute(permutation=[self.batch_size - 1] + [i for i in range(self.batch_size - 1)], axis=-2)  # transform [1,2,3] into [3,1,2]
-        #z_permut = z
-        #contatenated_permuted_z = z
-        #for _ in range(self.batch_size):
-        #    z_permut = circular_permut.forward(z_permut)
-        #    contatenated_permuted_z = tf.concatenate([contatenated_permuted_z,z_permut],axis=0)
-        #x_tiled= tf.tile(x,[self.batch_size,1])
-        #scores_vec = eval("self.{}_critic(x_tiled, contatenated_permuted_z)".format(self.critic_type))
-        #scores_matrix = tf.reshape(scores_vec,[self.batch_size, self.batch_size])
+        """
+        Description
+        -----------
+        An implementation of the noise-contrastive based MI estimator (NWJ)
+        https://arxiv.org/abs/1807.03748
+
+        Parameters
+        ----------
+        x : Tensor [?, dim_x]
+            Representing a batch of samples from P_X
+        z : Tensor [?, dim_z]
+            Representing a batch of samples from P_Z|X=x
+
+        Returns
+        -------
+        mi : Scalar []
+            An estimate of the MI between x and z
+        mi_for_grads : Scalar []
+            A bias corrected version of mi between x and z.
+            Must only be used to get a better gradient estimate of the MI.
+        """
+
         T_joint, T_product = self.critic(x, z)
         E_joint = tf.reduce_mean(T_joint)
         E_product = tf.log(1 / self.batch_size) + tf.reduce_mean(tf.reduce_logsumexp(tf.add(T_joint, T_product), axis=1))
@@ -76,7 +130,23 @@ class mi_regularizer(object):
         return vars
 
     def __call__(self, x, z, optimizer=None):
+        """
+        Description
+        -----------
+        Method to call whenever MI is to be used as a regularization term in another loss
 
+        Parameters
+        ----------
+        x : Tensor [?, dim_x]
+            Representing a batch of samples from P_X
+        z : Tensor [?, dim_z]
+            Representing a batch of samples from P_Z|X=x
+
+        Returns
+        -------
+        mi_eval : Scalar []
+            An estimate of I(x_data, z_data)
+        """
         train_ops = {}
         quantities = {}
 
@@ -98,27 +168,45 @@ class mi_regularizer(object):
             info.append("{}={:.3g}".format(name, value))
         return info
 
+
     def fit(self, x_data, z_data, batch_size, epochs):
+        """
+        Description
+        -----------
+        Method to call whenever one only need a scalar estimate of I(x_data, z_data)
+
+        Parameters
+        ----------
+        x : Tensor [?, dim_x]
+            Representing a batch of samples from P_X
+        z : Tensor [?, dim_z]
+            Representing a batch of samples from P_Z|X=x
+
+        Returns
+        -------
+        mi_eval : Scalar []
+            An estimate of I(x_data, z_data)
+        """
 
         tf.reset_default_graph()
-        x_ph = tf.placeholder(dtype=tf.float32, shape=[batch_size] + list(x_data.shape[1:]))
-        z_ph = tf.placeholder(dtype=tf.float32, shape=[batch_size] + list(z_data.shape[1:]))
+        x_ph = tf.placeholder(dtype=tf.float32, shape=[None] + list(x_data.shape[1:]))
+        z_ph = tf.placeholder(dtype=tf.float32, shape=[None] + list(z_data.shape[1:]))
 
         train_ops, quantities = self(x_ph, z_ph)
 
         gpu_options = tf.GPUOptions(allow_growth=True)
         
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-            n_batchs = int(x_data.shape[0]/batch_size)
+            n_batchs = int(x_data.shape[0] / batch_size)
             epoch_bar = trange(epochs)
             mi_ema = 0
             for epoch in epoch_bar:
                 batch_bar = trange(n_batchs)
                 for i in batch_bar:
-                    x_batch = x_data[i*batch_size:(i+1)*batch_size]
-                    z_batch = z_data[i*batch_size:(i+1)*batch_size]
-                    feed_dict = {x_ph:x_batch, z_ph:z_batch}
-                    if epoch+i == 0:
+                    x_batch = x_data[i * batch_size:(i + 1) * batch_size]
+                    z_batch = z_data[i * batch_size:(i + 1) * batch_size]
+                    feed_dict = {x_ph: x_batch, z_ph: z_batch}
+                    if epoch + i == 0:
                         _ = sess.run(tf.global_variables_initializer(), feed_dict=feed_dict)
                     _ = sess.run(train_ops['critic'], feed_dict=feed_dict) 
                     info = self.get_info(sess, feed_dict, quantities, epoch, i)
@@ -126,10 +214,4 @@ class mi_regularizer(object):
                     mi_batch = sess.run(quantities['mi'], feed_dict=feed_dict)
                     mi_ema -= (1 - 0.9) * (mi_ema - mi_batch)
         return mi_ema
-
-
-
-
-
-
 
