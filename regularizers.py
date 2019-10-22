@@ -61,7 +61,6 @@ class mi_regularizer(object):
         #scores_vec = eval("self.{}_critic(x_tiled, contatenated_permuted_z)".format(self.critic_type))
         #scores_matrix = tf.reshape(scores_vec,[self.batch_size, self.batch_size])
         T_joint, T_product = self.critic(x, z)
-
         E_joint = tf.reduce_mean(T_joint)
         E_product = tf.log(1 / self.batch_size) + tf.reduce_mean(tf.reduce_logsumexp(tf.add(T_joint, T_product), axis=1))
 
@@ -91,16 +90,15 @@ class mi_regularizer(object):
 
         return train_ops, quantities
 
-    def get_info(self, sess, feed_dict, quantities, step):
-        info = {}
-        info['step'] = "Step=" + str(step)
+    def get_info(self, sess, feed_dict, quantities, epoch, step):
+        info = []
+        info.append("Epoch={:d} Step={:d}".format(epoch, step))
         values = sess.run(list(quantities.values()), feed_dict=feed_dict)
         for name, value in zip(quantities.keys(), values):
-            if name not in info:
-                info[name] = name + "={:.3g}".format(value)
+            info.append("{}={:.3g}".format(name, value))
         return info
 
-    def fit(self, x_data, z_data, batch_size, epochs, eval_size=-1):
+    def fit(self, x_data, z_data, batch_size, epochs):
 
         tf.reset_default_graph()
         x_ph = tf.placeholder(dtype=tf.float32, shape=[batch_size] + list(x_data.shape[1:]))
@@ -109,10 +107,11 @@ class mi_regularizer(object):
         train_ops, quantities = self(x_ph, z_ph)
 
         gpu_options = tf.GPUOptions(allow_growth=True)
-
+        
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             n_batchs = int(x_data.shape[0]/batch_size)
             epoch_bar = trange(epochs)
+            mi_ema = 0
             for epoch in epoch_bar:
                 batch_bar = trange(n_batchs)
                 for i in batch_bar:
@@ -122,15 +121,11 @@ class mi_regularizer(object):
                     if epoch+i == 0:
                         _ = sess.run(tf.global_variables_initializer(), feed_dict=feed_dict)
                     _ = sess.run(train_ops['critic'], feed_dict=feed_dict) 
-                    info = self.get_info(sess, feed_dict, quantities, i)
-                    batch_bar.set_description('   '.join(list(info.values())))
-            if eval_size == -1:
-                eval_size = x_data.shape[0]
-            x_eval = x_data[:eval_size]
-            z_eval = z_data[:eval_size]
-            eval_feed_dict = {x_ph: x_eval, z_ph: z_eval}
-            mi_eval = sess.run(quantities['mi'], feed_dict=eval_feed_dict)
-        return mi_eval
+                    info = self.get_info(sess, feed_dict, quantities, epoch, i)
+                    batch_bar.set_description('   '.join(info))
+                    mi_batch = sess.run(quantities['mi'], feed_dict=feed_dict)
+                    mi_ema -= (1 - 0.9) * (mi_ema - mi_batch)
+        return mi_ema
 
 
 

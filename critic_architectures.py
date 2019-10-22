@@ -28,8 +28,11 @@ class joint_critic(object):
     def __call__(self, x, z):
 
         z_shuffle = tf.gather(z, tf.random.shuffle(tf.range(tf.shape(z)[0]))) # Workaround to make shuffle operation differentiable in the graph
-        T_joint = eval("self.{}(x,z)".format(self.critic_archi))
-        T_product = eval("self.{}(x,z_shuffle)".format(self.critic_archi))
+        joint_scores = eval("self.{}(x,z)".format(self.critic_archi))
+        product_scores = eval("self.{}(x,z_shuffle)".format(self.critic_archi))
+
+        T_joint = tf.concat([joint_scores, tf.zeros_like(product_scores)], axis=1)
+        T_product = tf.concat([tf.zeros_like(joint_scores), product_scores], axis=1)
 
         return T_joint, T_product
 
