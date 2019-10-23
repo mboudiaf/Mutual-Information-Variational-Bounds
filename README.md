@@ -2,7 +2,7 @@
 
 - [ ] Include more architectures for the critic network
 - [ ] More comments in functions
-- [ ] Testing code when X and Z are images
+- [X] Testing code when X and Z are images
 - [ ] Include units test
 
 # Variational Bounds on Mutual Information
@@ -14,48 +14,47 @@ This includes:
   * NCE estimator [3], based on noise contrastive estimation principle
   
 
-### Prerequisites
-
-Required packages are list in requirement.txt. Make sure all these packages are installed on your local machine.
-
-```
-pip3 install -r requirements.txt
-```
-
 ## Getting Started
 
 ### Defining the estimator
 
-<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_init.png" width=400>
-
-To define an estimator, one need to provide a few arguments. 
+To define an estimator, one needs to provide a few arguments. 
   ```python
-      args = {'critic_lr': ...,
-              'critic_lr': ...}
-      my_mi_estimator = mi_estimator(args, estimation method)
+      from estimator import Mi_estimator
+      my_mi_estimator = Mi_estimator(regu_name = ...,
+                                     dim_x = ...,
+                                     dim_z = ...,
+                                     batch_size= ...,
+                                     critic_layers=[256, 256, 256],
+                                     critic_lr=1e-4, 
+                                     critic_activation='relu',
+                                     critic_type='joint',
+                                     ema_decay=0.99,
+                                     negative_samples=1)
   ```
 
-The second is simply the regularization name. Concretly, you can follow this scheme:
-  ```python
-      from estimator import mi_estimator
-
-      estimation_methods = "mine"
-      args = {}
-      my_mi_estimator = mi_estimator(args, estimation method)
-  ```
-  This implementation offers two main functionalities that fit two use cases:
-  
  ### Measuring the MI between static data
  
 <img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_fit.png" width=400>
 For simple MI estimation between two random variables:
 
   ```python
-      from estimator import mi_estimator
-
-      estimation_methods = "mine"
-      my_mi_estimator = mi_estimator(args, estimation method) 
-
+      import numpy as np
+      dim_x = 10
+      dim_z = 15
+      x_data = np.random.rand(data_size, dim_x)
+      z_data = np.random.rand(data_size, dim_z)
+      
+      my_mi_estimator = Mi_estimator(regu_name = 'mine',
+                                     dim_x = [dim_x],
+                                     dim_z = [dim_z],
+                                     batch_size= 128,
+                                     critic_layers=[256, 256, 256],
+                                     critic_lr=1e-4, 
+                                     critic_activation='relu',
+                                     critic_type='joint',
+                                     ema_decay=0.99,
+                                     negative_samples=1)
       mi_estimate = my_mi_estimator.fit(x_data, z_data)
   ```
 
@@ -65,20 +64,30 @@ For simple MI estimation between two random variables:
 For use in a Tensorflow graph (as a regulazation term for instance)
 
   ```python
-      from estimator import mi_estimator
-
-      estimation_methods = "mine"
-      my_mi_estimator = mi_estimator(args, estimation method) 
-      
-      x = tf.placeholder(shape=[batch_size, dim_x], tf.float32)
-      z = tf.placeholder(shape=[batch_size, dim_x], tf.float32)
+      import tensorflow as tf
+      dim = 10
+      x = tf.placeholder(shape=[batch_size, dim], tf.float32)
+      z = tf.placeholder(shape=[batch_size, dim], tf.float32)
+      my_mi_estimator = Mi_estimator(regu_name = 'mine',
+                                     dim_x = [dim],
+                                     dim_z = [dim],
+                                     batch_size= 128,
+                                     critic_layers=[256, 256, 256],
+                                     critic_lr=1e-4, 
+                                     critic_activation='relu',
+                                     critic_type='joint',
+                                     ema_decay=0.99,
+                                     negative_samples=1)
       estimator_train_op, estimator_quantities = my_mi_estimator(x, z)
       
+      # Define regularized loss
       loss = loss_unregularized + beta * estimator_quantities['mi_for_grads']
       
+      # Define main training op
       main_train_op = optimizer.minimize(loss, var_list=...)
     
-      ... 
+      ...
+      # At every training iteration:
       
       # Perfom main training operation to optimize loss
       sess.run([main_train_op], feed_dict={x: ..., z= ..., ...})
@@ -87,11 +96,11 @@ For use in a Tensorflow graph (as a regulazation term for instance)
   ```
  
 
-## Examples
+## End-to-End Examples
 
-We provide code to showcase these two functionalities 
+We provide code to showcase the two functionalities we just talked about
 
-### Estimation of mutual information
+### Estimation of mutual information for static data
 
 In the case of correlated Gaussian random variables:
 
@@ -121,7 +130,7 @@ After training, plots are avaible in /plots/. You should obtain something like:
 The plots above present the estimated MI after 10 epochs of training on a 100k samples dataset with batch size 128, for the three estimation methods.
 
 
-## Using MI as a regularization term
+## Using MI as a regularization term in a loss
 
 The most interesting use case of these bounds is in the context of mutual information maximization. A typical example is reduction of mode collapse in GANs. In the context of GANs, the mutual information I(Z;X) is used as a proxy for the entropy of the generator H(X), where X represents the output of the generator, and Z the noise vector. The maximization of I(X;Z) results in the maximization of H(X).
 
@@ -133,9 +142,11 @@ We provide a simple example in 2D referred to as "25 gaussians experiments" wher
 <img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan_target.png" width="250">
 
 The simple GAN will produce, with the provided generator and discriminator architecture distributions like:
+
 <img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan _noreg.png" width="250">
 
 While the above plot clearly exposes a mode collapse, one can easily reduce this mode collapse by adding a MI regularization:
+
 <img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan_mine.png" width="250">
 
 To see the code for this example, first go the example directory
