@@ -14,6 +14,7 @@ from ops import conv2d
 
 class joint_critic(object):
     def __init__(self, args):
+
         self.dim_x = args.dim_x
         self.dim_z = args.dim_z
         self.critic_activation = eval("tf.nn.{}".format(args.critic_activation))
@@ -27,19 +28,37 @@ class joint_critic(object):
             self.critic_archi = "semi_conv"
 
     def __call__(self, x, z):
-        #circular_permut = tfp.bijectors.Permute(permutation=[self.batch_size - 1] + [i for i in range(self.batch_size - 1)], axis=-2)  # transform [1,2,3] into [3,1,2]
-        #z_permut = z
-        #contatenated_permuted_z = z
-        #for _ in range(self.batch_size):
-        #    z_permut = circular_permut.forward(z_permut)
-        #    contatenated_permuted_z = tf.concatenate([contatenated_permuted_z,z_permut],axis=0)
-        #x_tiled= tf.tile(x,[self.batch_size,1])
-        #scores_vec = eval("self.{}_critic(x_tiled, contatenated_permuted_z)".format(self.critic_type))
-        #scores_matrix = tf.reshape(scores_vec,[self.batch_size, self.batch_size])
+        """
+        Description
+        -----------
+        Performs a forward pass of all the pair (x,z_pos) and the negative
+         combinations(x,z_neg_i) through the critic network
 
-        z_shuffle = tf.gather(z, tf.random.shuffle(tf.range(tf.shape(z)[0]))) # Workaround to make shuffle operation differentiable in the graph
+        Parameters
+        ----------
+        x : Tensor [batch_size, dim_x]
+            Representing a batch of samples from P_X
+        z : Tensor [batch_size, dim_z]
+            Representing a batch of samples from P_Z|X=x
+
+        Returns
+        -------
+        T_joint : Tensor [batch_size, 1 + negative_samples]
+            The first column contains the scores of the positive pairs (x, z_pos)
+            The others are 0
+        T_product : Tensor [batch_size, 1 + negative_samples]
+            The first column is 0
+            The others reprsent the scores of the negative pairs (x, z_neg)
+        """
+
         joint_scores = eval("self.{}(x,z)".format(self.critic_archi))
-        product_scores = eval("self.{}(x,z_shuffle)".format(self.critic_archi))
+        neg_samples = tf.gather(z, tf.random.shuffle(tf.range(tf.shape(z)[0])))
+        product_scores = eval("self.{}(x, neg_samples)".format(self.critic_archi))
+        for _ in range(self.negative_samples - 1):
+                    neg_samples = tf.gather(z, tf.random.shuffle(tf.range(tf.shape(z)[0])))
+                    product_score = eval("self.{}(x, neg_samples)".format(self.critic_archi))
+                    product_scores = tf.concat([product_scores, product_score], axis=1)
+            
 
         T_joint = tf.concat([joint_scores, tf.zeros_like(product_scores)], axis=1)
         T_product = tf.concat([tf.zeros_like(joint_scores), product_scores], axis=1)
@@ -149,7 +168,28 @@ class separate_critic(object):
         self.num_output_units = 10
 
     def __call__(self, x, z):
+        """
+        Description
+        -----------
+        Performs a forward pass of all the pair (x,z_pos) and the negative
+         combinations(x,z_neg_i) through the critic network
 
+        Parameters
+        ----------
+        x : Tensor [batch_size, dim_x]
+            Representing a batch of samples from P_X
+        z : Tensor [batch_size, dim_z]
+            Representing a batch of samples from P_Z|X=x
+
+        Returns
+        -------
+        T_joint : Tensor [batch_size, batch_size]
+            Diagonal element (i,i) is the score associated to the positive pair (x_i, z_i)
+            Off-diagonal elements are 0.
+        T_product : Tensor [batch_size, bathc_size]
+            Diagonal elements are 0
+            Off-diagonal elements (i,j) are the score associated to the negative pair (x_i, z_j)
+        """
         T_x = eval("self.{}(x, 'X_network')".format(self.x_critic_archi))
         T_z = eval("self.{}(z, 'Z_network')".format(self.z_critic_archi))
         score_matrix = tf.matmul(T_x, tf.transpose(T_z))
