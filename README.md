@@ -4,7 +4,7 @@
 - [ ] More comments in functions
 - [ ] Testing code when X and Z are images
 
-# Variational Bounds of Mutual Information
+# Variational Bounds on Mutual Information
 
 Throughout this repo, I offer a ready-to-use implementation of state-of-the-art variational methods for mutual information estimation in Tensorflow.
 This includes:
@@ -77,7 +77,7 @@ python3 run_exp.py
 ```
 After training, plots are avaible in /plots/. You should obtain something like:
 
-<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/20_seeds.png" width="400">
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_mine.png" width="400"><img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_nwj.png" width="400"><img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_nce.png" width="400">
 
 The plot above represents the estimated mutual info after training for one estimation method.
 
