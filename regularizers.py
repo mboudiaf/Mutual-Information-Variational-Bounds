@@ -26,6 +26,11 @@ class mi_regularizer(object):
         self.critic_activation = args.critic_activation
         self.critic_layers = args.critic_layers
         self.ema_decay = args.ema_decay
+        if args.critic_type == 'separate':
+            self.negative_samples = self.batch_size # if critic is separate, we get 'for free' all the n^2 combinations
+        else:
+            self.negative_samples == args.negative_samples 
+
         self.critic = eval('{}_critic(args)'.format(args.critic_type))
 
     def nwj(self, x, z):
@@ -52,7 +57,7 @@ class mi_regularizer(object):
         """
         T_joint, T_product = self.critic(x, z)
         E_joint = 1 / self.batch_size * tf.reduce_sum(T_joint)
-        E_product = 1 / (np.e * self.batch_size * (T_product.get_shape().as_list()[1] - 1)) * (tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
+        E_product = 1 / (np.e * self.batch_size * self.negative_samples) * (tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
         mi = E_joint - E_product
         mi_for_grads = mi
 
@@ -83,7 +88,7 @@ class mi_regularizer(object):
         T_joint, T_product = self.critic(x, z)
 
         E_joint = 1 / self.batch_size * tf.reduce_sum(T_joint)
-        E_product = np.log(1 / self.batch_size * (T_product.get_shape().as_list()[1] - 1)) + tf.log(tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
+        E_product = np.log(1 / (self.batch_size * self.negative_samples)) + tf.log(tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
         mi = E_joint - E_product
 
         ema_denominator = tf.Variable(tf.exp(tf.reduce_logsumexp(T_product)))
@@ -117,7 +122,7 @@ class mi_regularizer(object):
 
         T_joint, T_product = self.critic(x, z)
         E_joint = 1 / self.batch_size * tf.reduce_sum(T_joint)
-        E_product = np.log(1 / T_product.get_shape().as_list()[1]) + tf.reduce_mean(tf.reduce_logsumexp(tf.add(T_joint, T_product), axis=1))
+        E_product = np.log(1 / (self.negative_samples+1)) + tf.reduce_mean(tf.reduce_logsumexp(tf.add(T_joint, T_product), axis=1))
 
         mi = E_joint - E_product
         mi_for_grads = mi

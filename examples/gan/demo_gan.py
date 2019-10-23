@@ -31,6 +31,8 @@ def get_args():
     parser.add_argument('--critic_activation', type=str, default='relu')
     parser.add_argument('--critic_type', type=str, default='joint',
         help='Type of critic network used between "joint" or "separate"')
+    parser.add_argument('--negative_samples', type=int, default=1,
+        help='Number of negative samples used in estimation of the product term')
 
     # Optim hyperparm
     parser.add_argument('--gen_lr', type=float, default=1e-4,

@@ -17,19 +17,21 @@ def get_args():
     # Bound hyperparam
     parser.add_argument('--regularizer', type=str, required=True)
 
-    # Architecture hyperparm
+    # MI estimator params
+    parser.add_argument('--ema_decay', type=float, default=0.99)
+    parser.add_argument('--critic_type', type=str, default='joint',
+                        help='Type of critic network used between "joint" or "separate"')
     parser.add_argument('--critic_layers', type=int, nargs='+', default=[256, 256, 256],
                         help='Layers defining the critic')
     parser.add_argument('--critic_activation', type=str, default='relu')
     parser.add_argument('--critic_lr', type=float, default=1e-4,
                         help='Learning Rate used to train the critic network')
-    parser.add_argument('--critic_type', type=str, default='joint',
-                        help='Type of critic network used between "joint" or "separate"')
+    parser.add_argument('--negative_samples', type=int, default=1,
+                        help='Number of negative samples used in estimation of the product term')
 
     # Training hyperparams
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--ema_decay', type=float, default=0.99)
     parser.add_argument('--data_size', type=int, default=100000)
 
 
