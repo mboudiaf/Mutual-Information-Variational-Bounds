@@ -6,9 +6,9 @@ import os
 import itertools
 
 beta = [1]
-unroll_critic = [1]
-critic_type = ['joint']
-regularizers = ['mine', 'nwj']
+unroll_critic = [5]
+critic_type = ['separate']
+regularizers = ['nce']
 
 comb_test_params = itertools.product(beta, unroll_critic, critic_type, regularizers)
 labels_test_params = ['beta', 'unroll_critic', 'critic_type', 'regularizer']
