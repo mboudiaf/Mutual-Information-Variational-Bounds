@@ -17,7 +17,9 @@ fixed_params = {'ema_decay': 0.99,
 		'epoch': 400,
 		'negative_samples':1,
 		'scheduling': 200,
-		'batch_norm': True}
+		'batch_norm': True,
+		'critic_layers': '400 400 400',
+		'critic_activation': 'leaky_relu'}
 
 for param_comb in comb_test_params:
     command_line = "python3 demo_gan.py "
