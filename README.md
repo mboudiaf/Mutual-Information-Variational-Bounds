@@ -31,8 +31,10 @@ pip3 install -r requirements.txt
 To define an estimator, one need to provide a few arguments. 
   ```python
       from estimator import Mi_estimator
-      my_mi_estimator = Mi_estimator(regu_name='mine',
-                                     batch_size=128,
+      my_mi_estimator = Mi_estimator(regu_name = ...,
+                                     dim_x = ...,
+                                     dim_z = ...,
+                                     batch_size= ...,
                                      critic_layers=[256, 256, 256],
                                      critic_lr=1e-4, critic_activation='relu',
                                      critic_type='joint',
@@ -55,8 +57,20 @@ For simple MI estimation between two random variables:
 
   ```python
       import numpy as np
-      x_data = np.random.rand(data_size, 10)
-      z_data = np.random.rand(data_size, 10)
+      dim_x = 10
+      dim_z = 15
+      x_data = np.random.rand(data_size, dim_x)
+      z_data = np.random.rand(data_size, dim_z)
+      
+      my_mi_estimator = Mi_estimator(regu_name = 'mine',
+                                     dim_x = [dim_x],
+                                     dim_z = [dim_z],
+                                     batch_size= 128,
+                                     critic_layers=[256, 256, 256],
+                                     critic_lr=1e-4, critic_activation='relu',
+                                     critic_type='joint',
+                                     ema_decay=0.99,
+                                     negative_samples=1)
       mi_estimate = my_mi_estimator.fit(x_data, z_data)
   ```
 
@@ -70,6 +84,15 @@ For use in a Tensorflow graph (as a regulazation term for instance)
       dim = 10
       x = tf.placeholder(shape=[batch_size, dim], tf.float32)
       z = tf.placeholder(shape=[batch_size, dim], tf.float32)
+      my_mi_estimator = Mi_estimator(regu_name = 'mine',
+                                     dim_x = [dim],
+                                     dim_z = [dim],
+                                     batch_size= 128,
+                                     critic_layers=[256, 256, 256],
+                                     critic_lr=1e-4, critic_activation='relu',
+                                     critic_type='joint',
+                                     ema_decay=0.99,
+                                     negative_samples=1)
       estimator_train_op, estimator_quantities = my_mi_estimator(x, z)
       
       # Define regularized loss
