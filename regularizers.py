@@ -183,9 +183,13 @@ class Mi_estimator(object):
 
         Returns
         -------
-        mi_eval : tf.Variable []
-            An estimate of I(x, z)
+        train_ops : list
+            The list of tensorflow operations to perform in order to update the bound.
+        quantities : dict
+            Dictionnary {'mi': current estimate of MI,
+                         'mi_for_grads' : bias corrected estimate of MI, term to be used for differentiation}
         """
+        
         train_ops = {}
         quantities = {}
 
