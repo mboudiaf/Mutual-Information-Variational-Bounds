@@ -104,11 +104,11 @@ We provide code to showcase the two functionalities we just talked about
 
 In the case of correlated Gaussian random variables:
 
-<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/gaussian_rvs.png" width="200">
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gaussian_rvs.png" width="200">
 
 We have access to the mutual information:
 
-<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/gaussian_mi.png" width="400">
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gaussian_mi.png" width="400">
 
 First go the example directory
 ```
