@@ -6,7 +6,7 @@ import subprocess
 
 subprocess.run(["python3", "demo_gaussian.py",
                 "--regularizer", "nce",
-                "--critic_type", "joint",
+                "--critic_type", "separate",
                 "--data_size", "100000",
                 "--epochs", "10"
                 ])

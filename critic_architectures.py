@@ -19,6 +19,7 @@ class joint_critic(object):
         self.dim_z = args.dim_z
         self.critic_activation = eval("tf.nn.{}".format(args.critic_activation))
         self.critic_layers = args.critic_layers
+        self.negative_samples = args.negative_samples
 
         if len(self.dim_x) == 1 and len(self.dim_z) == 1:
             self.critic_archi = "fc"

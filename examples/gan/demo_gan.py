@@ -54,8 +54,8 @@ def get_args():
         help='Regularization strength')
     parser.add_argument('--scheduling', type=float, default=400,
         help='If one wishes to remove regularization from objectives after ? epochs')
-    parser.add_argument('--seed', type=int, default=0,
-        help='If one wishes to remove regularization from objectives after ? epochs')
+    parser.add_argument('--seed', type=int, default=1234,
+        help='Seed for the graph')
     
 
     
@@ -88,9 +88,9 @@ def get_args():
     return args
 
 def sample_z(random_state, m, n):
-    #out = random_state.uniform(-1., 1., size=[m, n])
-    #return out
-    return random_state.randn(m, n)
+    out = random_state.uniform(-1., 1., size=[m, n])
+    return out
+    #return random_state.randn(m, n)
 
 def perform_adaptive_clipping(regul_term, variables, grad_upper_bound):
     g_r = tf.gradients(regul_term, variables)
