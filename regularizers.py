@@ -16,22 +16,22 @@ from ops import *
 from tqdm import trange
 from critic_architectures import joint_critic, separate_critic
 
-class mi_regularizer(object):
+class mi_estimator(object):
 
-    def __init__(self, args, regu_name):
+    def __init__(self, regu_name, critic_layers=[256, 256, 256], critic_lr=1e-4, critic_activation='relu', critic_type='joint', ema_decay=0.99, negative_samples=1):
         self.regu_name = regu_name
-        self.critic_lr = args.critic_lr
-        self.ema_decay = args.ema_decay
-        self.batch_size = args.batch_size
-        self.critic_activation = args.critic_activation
-        self.critic_layers = args.critic_layers
-        self.ema_decay = args.ema_decay
-        if args.critic_type == 'separate':
+        self.critic_lr = critic_lr
+        self.ema_decay = ema_decay
+        self.batch_size = batch_size
+        self.critic_activation = critic_activation
+        self.critic_layers = critic_layers
+        self.ema_decay = ema_decay
+        if critic_type == 'separate':
             self.negative_samples = self.batch_size # if critic is separate, we get 'for free' all the n^2 combinations
         else:
             self.negative_samples == args.negative_samples 
 
-        self.critic = eval('{}_critic(args)'.format(args.critic_type))
+        self.critic = eval('{}_critic(args)'.format(critic_type))
 
     def nwj(self, x, z):
         """
