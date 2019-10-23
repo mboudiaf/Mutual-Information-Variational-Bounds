@@ -58,8 +58,10 @@ We provide code to showcase these two functionalities
 
 ### Estimation of mutual information
 
-In the case of correlated Gaussian, we have access to the mutual information:
+In the case of correlated Gaussian random variables:
+<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/gaussian_rvs.png" width="400">
 
+We have access to the mutual information:
 <img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/gaussian_mi.png" width="400">
 
 First go the example directory
@@ -83,6 +85,29 @@ The plot above represents the estimated mutual info after training for one estim
 
 
 ## Using MI as a regularization term
+
+The most interesting use case of these bounds is in the context of mutual information maximization. A typical example is reduction of mode collapse in GANs. In the context of GANs, the mutual information I(Z;X) is used as a proxy for the entropy of the generator H(X), where X represents the output of the generator, and Z the noise vector. The maximization of I(X;Z) results in the maximization of H(X).
+
+```
+loss_regularized = loss_gan - beta * I(X;Z)
+```
+We provide a simple example in 2D referred to as "25 gaussians experiments" where the target distribution is:
+
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan_target.png" width="400">
+
+First go the example directory
+```
+cd examples/gan/
+```
+Then, run some tests to make sure the code doesn't yield any bug:
+```
+python3 run_test.py
+```
+Finally, to run the experiments, you can check all the available options in "demo_gaussian.py", and loop over any parameters by modifying the header of run_exp.py.
+Then simply run:
+```
+python3 run_exp.py
+```
 
 
 ## Authors
