@@ -4,7 +4,7 @@
 - [ ] More comments in functions
 - [ ] Testing code when X and Z are images
 
-# Variational Bounds of Mutual Information
+# Variational Bounds on Mutual Information
 
 Throughout this repo, I offer a ready-to-use implementation of state-of-the-art variational methods for mutual information estimation in Tensorflow.
 This includes:
@@ -46,9 +46,18 @@ This implementation offers two main functionalities that fit two use cases:
       
       x = tf.placeholder(shape=[batch_size, dim_x], tf.float32)
       z = tf.placeholder(shape=[batch_size, dim_x], tf.float32)
-      mi_regularization_term = my_mi_estimator(x, z)
+      estimator_train_op, estimator_quantities = my_mi_estimator(x, z)
       
-      loss = loss_unregularized + beta * mi_regularization_term
+      loss = loss_unregularized + beta * estimator_quantities['mi_for_grads']
+      
+      main_train_op = optimizer.minimize(loss, var_list=...)
+    
+      ... 
+      
+      # Perfom main training operation to optimize loss
+      sess.run([main_train_op], feed_dict={x: ?, z= ?, ...})
+      # Then update estimator 
+      sess.run(estimator_train_op, feed_dict={x: ?, z= ?})   
   ```
  
 
@@ -58,7 +67,11 @@ We provide code to showcase these two functionalities
 
 ### Estimation of mutual information
 
-In the case of correlated Gaussian, we have access to the mutual information:
+In the case of correlated Gaussian random variables:
+
+<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/gaussian_rvs.png" width="200">
+
+We have access to the mutual information:
 
 <img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/gaussian_mi.png" width="400">
 
@@ -77,12 +90,35 @@ python3 run_exp.py
 ```
 After training, plots are avaible in /plots/. You should obtain something like:
 
-<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/20_seeds.png" width="400">
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_mine.png" width="400"><img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_nwj.png" width="400"><img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_nce.png" width="400">
 
 The plot above represents the estimated mutual info after training for one estimation method.
 
 
 ## Using MI as a regularization term
+
+The most interesting use case of these bounds is in the context of mutual information maximization. A typical example is reduction of mode collapse in GANs. In the context of GANs, the mutual information I(Z;X) is used as a proxy for the entropy of the generator H(X), where X represents the output of the generator, and Z the noise vector. The maximization of I(X;Z) results in the maximization of H(X).
+
+```
+loss_regularized = loss_gan - beta * I(X;Z)
+```
+We provide a simple example in 2D referred to as "25 gaussians experiments" where the target distribution is:
+
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan_target.png" width="400">
+
+First go the example directory
+```
+cd examples/gan/
+```
+Then, run some tests to make sure the code doesn't yield any bug:
+```
+python3 run_test.py
+```
+Finally, to run the experiments, you can check all the available options in "demo_gaussian.py", and loop over any parameters by modifying the header of run_exp.py.
+Then simply run:
+```
+python3 run_exp.py
+```
 
 
 ## Authors
