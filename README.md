@@ -59,9 +59,11 @@ We provide code to showcase these two functionalities
 ### Estimation of mutual information
 
 In the case of correlated Gaussian random variables:
-<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/gaussian_rvs.png" width="400">
+
+<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/gaussian_rvs.png" width="200">
 
 We have access to the mutual information:
+
 <img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/gaussian_mi.png" width="400">
 
 First go the example directory
