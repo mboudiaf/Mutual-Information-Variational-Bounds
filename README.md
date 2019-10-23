@@ -55,9 +55,9 @@ This implementation offers two main functionalities that fit two use cases:
       ... 
       
       # Perfom main training operation to optimize loss
-      sess.run([main_train_op], feed_dict={x: ?, z= ?, ...})
+      sess.run([main_train_op], feed_dict={x: ..., z= ..., ...})
       # Then update estimator 
-      sess.run(estimator_train_op, feed_dict={x: ?, z= ?})   
+      sess.run(estimator_train_op, feed_dict={x: ..., z= ...})   
   ```
  
 
@@ -90,9 +90,9 @@ python3 run_exp.py
 ```
 After training, plots are avaible in /plots/. You should obtain something like:
 
-<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_mine.png" width="400"><img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_nwj.png" width="400"><img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_nce.png" width="400">
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_mine.png" width="250"><img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_nwj.png" width="250"><img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/cor_gaussian_nce.png" width="250">
 
-The plot above represents the estimated mutual info after training for one estimation method.
+The plots above present the estimated MI after 10 epochs of training on a 100k samples dataset with batch size 128, for the three estimation methods.
 
 
 ## Using MI as a regularization term
@@ -104,9 +104,15 @@ loss_regularized = loss_gan - beta * I(X;Z)
 ```
 We provide a simple example in 2D referred to as "25 gaussians experiments" where the target distribution is:
 
-<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan_target.png" width="400">
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan_target.png" width="250">
 
-First go the example directory
+The simple GAN will produce, with the provided generator and discriminator architecture distributions like:
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan _noreg.png" width="250">
+
+While the above plot clearly exposes a mode collapse, one can easily reduce this mode collapse by adding a MI regularization:
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan_mine.png" width="250">
+
+To see the code for this example, first go the example directory
 ```
 cd examples/gan/
 ```
@@ -128,5 +134,7 @@ python3 run_exp.py
 ## References
 
 [1] Ishmael  Belghazi,  Sai  Rajeswar,  Aristide  Baratin,  R.  Devon  Hjelm,  and  Aaron  C.Courville.   MINE:  mutual  information  neural  estimation.CoRR,  https://arxiv.org/abs/1801.04062
+
 [2] Sebastian Nowozin, Botond Cseke, Ryota Tomioka, f-GAN: Training Generative Neural Samplers using Variational Divergence Minimization, https://arxiv.org/abs/1606.00709
+
 [3] Aaron van den Oord, Yazhe Li, Oriol Vinyals, Representation Learning with Contrastive Predictive Coding, https://arxiv.org/abs/1807.03748
