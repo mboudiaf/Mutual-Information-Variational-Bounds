@@ -79,12 +79,12 @@ def run(args):
     estimated_mis = []
     for rho in rho_values:
         x, z, mi = generate_correlated_gaussian(args.data_size, rho, args.dim_x[0])
-        regularizers = Mi_estimator(args.regularizer, args.critic_layers, args.critic_lr, args.critic_activation, args.critic_type, args.ema_decay, args.negative_samples)
+        regularizers = Mi_estimator(args.regularizer, args.batch_size, args.critic_layers, args.critic_lr, args.critic_activation, args.critic_type, args.ema_decay, args.negative_samples)
         estimated_mis.append(regularizers.fit(x, z, args.batch_size, args.epochs, mi))
         true_mis.append(mi)
     if not os.path.exists(args.plot_dir):
         os.makedirs(args.plot_dir)
-    plot(args.regularizer, rho_values, estimated_mis, true_mis, "{}/{}.png".format(args.plot_dir, args.regularizer))
+    plot(args.regularizer, args.dim_x, args.dim_x, rho_values, estimated_mis, true_mis, "{}/{}.png".format(args.plot_dir, args.regularizer))
 
 
 # ------------------------------------------------------------ main ----------------------------------------------------------------------------------- #

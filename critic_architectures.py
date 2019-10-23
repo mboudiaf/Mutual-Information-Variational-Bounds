@@ -13,13 +13,13 @@ import numpy as np
 from ops import conv2d
 
 class joint_critic(object):
-    def __init__(self, args):
+    def __init__(self, dim_x, dim_z, critic_activation, critic_layers, negative_samples):
 
-        self.dim_x = args.dim_x
-        self.dim_z = args.dim_z
-        self.critic_activation = eval("tf.nn.{}".format(args.critic_activation))
-        self.critic_layers = args.critic_layers
-        self.negative_samples = args.negative_samples
+        self.dim_x = dim_x
+        self.dim_z = dim_z
+        self.critic_activation = eval("tf.nn.{}".format(critic_activation))
+        self.critic_layers = critic_layers
+        self.negative_samples = negative_samples
 
         if len(self.dim_x) == 1 and len(self.dim_z) == 1:
             self.critic_archi = "fc"
@@ -107,9 +107,9 @@ class joint_critic(object):
         d_h = 2
         d_w = 2
         stddev = 0.02
-        dim_x = x.shape[1]
-        dim_z = z.shape[1]
-        if dim_x > dim_z: # a always has the widest dimension
+        width_x = self.dim_x[0]
+        width_z = self.dim_x[0]
+        if width_x > width_z: # a always has the widest dimension
             a = x
             b = z
         else:
@@ -117,16 +117,15 @@ class joint_critic(object):
             b = x
 
         with tf.variable_scope('critic', reuse=tf.AUTO_REUSE):
-            a0 = conv2d(a, output_dim=df_dim, k_h=k_h + tf.abs(dim_x - dim_z), k_w=k_w + tf.abs(dim_x - dim_z),
+            a0 = conv2d(a, output_dim=df_dim, k_h=k_h + np.abs(width_x - width_z), k_w=k_w + np.abs(width_x - width_z),
                         d_h=d_h, d_w=d_w, stddev=stddev, name='conv_2D_a')
             b0 = conv2d(b, output_dim=df_dim, k_h=k_h, k_w=k_w, d_h=d_w, d_w=d_h, stddev=stddev, name='conv_2D_b')
-            assert a0.get_shape() == b0.get_shape()
             h0 = self.critic_activation(tf.add(a0, b0))
 
             h1 = tf.nn.elu(conv2d(h0, output_dim=2 * df_dim, k_h=k_h, k_w=k_w, d_h=d_h, d_w=d_w, stddev=stddev, name='conv_2D_2'))
             h2 = tf.nn.elu(conv2d(h1, output_dim=4 * df_dim, k_h=k_h, k_w=k_w, d_h=d_h, d_w=d_w, stddev=stddev, name='conv_2D_3'))
-            h3 = tf.layers.dense(tf.layers.flatten(h2), 1024, scope='tf.layers.dense_4')
-            h4 = tf.layers.dense(h3, 1, scope='tf.layers.dense_5')
+            h3 = tf.layers.dense(tf.layers.flatten(h2), 1024)
+            h4 = tf.layers.dense(h3, 1)
 
         return h4
 
