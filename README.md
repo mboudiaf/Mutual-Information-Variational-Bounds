@@ -18,9 +18,7 @@ This includes:
 
 ### Defining the estimator
 
-<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_init.png" width=400>
-
-To define an estimator, one need to provide a few arguments. 
+To define an estimator, one needs to provide a few arguments. 
   ```python
       from estimator import Mi_estimator
       my_mi_estimator = Mi_estimator(regu_name = ...,
