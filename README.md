@@ -3,6 +3,7 @@
 - [ ] Include more architectures for the critic network
 - [ ] More comments in functions
 - [ ] Testing code when X and Z are images
+- [ ] Include units test
 
 # Variational Bounds on Mutual Information
 
