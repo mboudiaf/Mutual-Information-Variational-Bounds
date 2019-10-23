@@ -6,14 +6,14 @@ import os
 import itertools
 
 beta = [1]
-unroll_critic = [5]
-critic_type = ['separate']
+unroll_critic = [1]
+critic_type = ['joint']
 regularizers = ['nce']
 
 comb_test_params = itertools.product(beta, unroll_critic, critic_type, regularizers)
 labels_test_params = ['beta', 'unroll_critic', 'critic_type', 'regularizer']
 
-fixed_params = {'ema_decay': 0.99, 'epoch': 200}
+fixed_params = {'ema_decay': 0.99, 'epoch': 200, 'negative_samples':2}
 
 for param_comb in comb_test_params:
     command_line = "python3 demo_gan.py "

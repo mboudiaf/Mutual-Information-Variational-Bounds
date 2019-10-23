@@ -29,7 +29,7 @@ class mi_regularizer(object):
         if args.critic_type == 'separate':
             self.negative_samples = self.batch_size # if critic is separate, we get 'for free' all the n^2 combinations
         else:
-            self.negative_samples == args.negative_samples 
+            self.negative_samples = args.negative_samples 
 
         self.critic = eval('{}_critic(args)'.format(args.critic_type))
 
