@@ -42,14 +42,6 @@ To define an estimator, one need to provide a few arguments.
                                      negative_samples=1)
   ```
 
-The second is simply the regularization name. Concretly, you can follow this scheme:
-  ```python
-      estimation_methods = "mine"
-      args = {}
-      my_mi_estimator = mi_estimator(args, estimation method)
-  ```
-  This implementation offers two main functionalities that fit two use cases:
-  
  ### Measuring the MI between static data
  
 <img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_fit.png" width=400>
