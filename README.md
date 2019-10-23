@@ -14,14 +14,6 @@ This includes:
   * NCE estimator [3], based on noise contrastive estimation principle
   
 
-### Prerequisites
-
-Required packages are list in requirement.txt. Make sure all these packages are installed on your local machine.
-
-```
-pip3 install -r requirements.txt
-```
-
 ## Getting Started
 
 ### Defining the estimator
