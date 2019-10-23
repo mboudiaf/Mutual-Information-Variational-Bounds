@@ -103,11 +103,11 @@ For use in a Tensorflow graph (as a regulazation term for instance)
   ```
  
 
-## Examples
+## End-to-End Examples
 
-We provide code to showcase these two functionalities 
+We provide code to showcase the two functionalities we just talked about
 
-### Estimation of mutual information
+### Estimation of mutual information for static data
 
 In the case of correlated Gaussian random variables:
 
@@ -137,7 +137,7 @@ After training, plots are avaible in /plots/. You should obtain something like:
 The plots above present the estimated MI after 10 epochs of training on a 100k samples dataset with batch size 128, for the three estimation methods.
 
 
-## Using MI as a regularization term
+## Using MI as a regularization term in a loss
 
 The most interesting use case of these bounds is in the context of mutual information maximization. A typical example is reduction of mode collapse in GANs. In the context of GANs, the mutual information I(Z;X) is used as a proxy for the entropy of the generator H(X), where X represents the output of the generator, and Z the noise vector. The maximization of I(X;Z) results in the maximization of H(X).
 
