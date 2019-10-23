@@ -37,17 +37,17 @@ class joint_critic(object):
 
         Parameters
         ----------
-        x : Tensor [batch_size, dim_x]
+        x : tf.Variable [batch_size, dim_x]
             Representing a batch of samples from P_X
-        z : Tensor [batch_size, dim_z]
+        z : tf.Variable [batch_size, dim_z]
             Representing a batch of samples from P_Z|X=x
 
         Returns
         -------
-        T_joint : Tensor [batch_size, 1 + negative_samples]
+        T_joint : tf.Variable [batch_size, 1 + negative_samples]
             The first column contains the scores of the positive pairs (x, z_pos)
             The others are 0
-        T_product : Tensor [batch_size, 1 + negative_samples]
+        T_product : tf.Variable [batch_size, 1 + negative_samples]
             The first column is 0
             The others reprsent the scores of the negative pairs (x, z_neg)
         """
@@ -177,17 +177,17 @@ class separate_critic(object):
 
         Parameters
         ----------
-        x : Tensor [batch_size, dim_x]
+        x : tf.Variable [batch_size, dim_x]
             Representing a batch of samples from P_X
-        z : Tensor [batch_size, dim_z]
+        z : tf.Variable [batch_size, dim_z]
             Representing a batch of samples from P_Z|X=x
 
         Returns
         -------
-        T_joint : Tensor [batch_size, batch_size]
+        T_joint : tf.Variable [batch_size, batch_size]
             Diagonal element (i,i) is the score associated to the positive pair (x_i, z_i)
             Off-diagonal elements are 0.
-        T_product : Tensor [batch_size, bathc_size]
+        T_product : tf.Variable [batch_size, bathc_size]
             Diagonal elements are 0
             Off-diagonal elements (i,j) are the score associated to the negative pair (x_i, z_j)
         """

@@ -16,9 +16,42 @@ from ops import *
 from tqdm import trange
 from critic_architectures import joint_critic, separate_critic
 
-class mi_estimator(object):
+class Mi_estimator(object):
 
-    def __init__(self, regu_name, critic_layers=[256, 256, 256], critic_lr=1e-4, critic_activation='relu', critic_type='joint', ema_decay=0.99, negative_samples=1):
+    def __init__(self, regu_name, batch_size, critic_layers=[256, 256, 256], critic_lr=1e-4, critic_activation='relu', critic_type='joint', ema_decay=0.99, negative_samples=1):
+         """
+        Description
+        -----------
+        Defines the mi_estimator
+
+        Parameters
+        ----------
+        regu_name: string
+            Name of the regularization method used. Chosen in ['nce','mine','nwj']
+        batch_size: int
+            Size of the batches that will be used during training.
+        critic_layers: list
+            The fully connected layers used in the critic network.
+        critic_lr: float
+            Learning rate used to update the critic network
+        critic_activation : string
+            Activation used in the critic network
+        critic_type: string
+            Type of critic network used. Between 'joint' and 'separate'
+            Joint critics usually work better, but separate critics are more computationally efficient
+        ema_decay: float
+            Exponential Moving Average decay used to correct biased gradients (for MINE only)
+        negative_samples: int
+            Number of negative samples used in the expectation estimation.
+            Number between 1 and batch_size - 1
+            The more, the better but the more computationally expensive.
+
+        Returns
+        -------
+        mi_estimator: Mi_estimator
+            The mutual information estimator
+        """
+
         self.regu_name = regu_name
         self.critic_lr = critic_lr
         self.ema_decay = ema_decay
@@ -42,16 +75,16 @@ class mi_estimator(object):
 
         Parameters
         ----------
-        x : Tensor [?, dim_x]
+        x : tf.Variable [batch_size, dim_x]
             Representing a batch of samples from P_X
-        z : Tensor [?, dim_z]
+        z : tf.Variable [batch_size, dim_z]
             Representing a batch of samples from P_Z|X=x
 
         Returns
         -------
-        mi : Scalar []
+        mi : tf.Variable []
             An estimate of the MI between x and z
-        mi_for_grads : Scalar []
+        mi_for_grads : tf.Variable []
             A bias corrected version of mi between x and z.
             Must only be used to get a better gradient estimate of the MI.
         """
@@ -72,16 +105,16 @@ class mi_estimator(object):
 
         Parameters
         ----------
-        x : Tensor [?, dim_x]
+        x : tf.Variable [batch_size, dim_x]
             Representing a batch of samples from P_X
-        z : Tensor [?, dim_z]
+        z : tf.Variable [batch_size, dim_z]
             Representing a batch of samples from P_Z|X=x
 
         Returns
         -------
-        mi : Scalar []
+        mi : tf.Variable []
             An estimate of the MI between x and z
-        mi_for_grads : Scalar []
+        mi_for_grads : tf.Variable []
             A bias corrected version of mi between x and z.
             Must only be used to get a better gradient estimate of the MI.
         """
@@ -106,16 +139,16 @@ class mi_estimator(object):
 
         Parameters
         ----------
-        x : Tensor [?, dim_x]
+        x : tf.Variable [batch_size, dim_x]
             Representing a batch of samples from P_X
-        z : Tensor [?, dim_z]
+        z : tf.Variable [batch_size, dim_z]
             Representing a batch of samples from P_Z|X=x
 
         Returns
         -------
-        mi : Scalar []
+        mi : tf.Variable []
             An estimate of the MI between x and z
-        mi_for_grads : Scalar []
+        mi_for_grads : tf.Variable []
             A bias corrected version of mi between x and z.
             Must only be used to get a better gradient estimate of the MI.
         """
@@ -143,15 +176,15 @@ class mi_estimator(object):
 
         Parameters
         ----------
-        x : Tensor [?, dim_x]
+        x : tf.Variable [batch_size, dim_x]
             Representing a batch of samples from P_X
-        z : Tensor [?, dim_z]
+        z : tf.Variable [batch_size, dim_z]
             Representing a batch of samples from P_Z|X=x
 
         Returns
         -------
-        mi_eval : Scalar []
-            An estimate of I(x_data, z_data)
+        mi_eval : tf.Variable []
+            An estimate of I(x, z)
         """
         train_ops = {}
         quantities = {}
@@ -175,7 +208,7 @@ class mi_estimator(object):
         return info
 
 
-    def fit(self, x_data, z_data, batch_size, epochs, ground_truth_mi=None):
+    def fit(self, x_data, z_data, epochs, ground_truth_mi=None):
         """
         Description
         -----------
@@ -183,14 +216,14 @@ class mi_estimator(object):
 
         Parameters
         ----------
-        x : Tensor [?, dim_x]
-            Representing a batch of samples from P_X
-        z : Tensor [?, dim_z]
-            Representing a batch of samples from P_Z|X=x
+        x : numpy array [?, dim_x]
+            Representing a dataset of samples from P_X
+        z : numpy array [?, dim_z]
+            Representing a dataset of samples from P_Z|X=x
 
         Returns
         -------
-        mi_eval : Scalar []
+        mi_eval : float
             An estimate of I(x_data, z_data)
         """
 
@@ -203,14 +236,14 @@ class mi_estimator(object):
         gpu_options = tf.GPUOptions(allow_growth=True)
         
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-            n_batchs = int(x_data.shape[0] / batch_size)
+            n_batchs = int(x_data.shape[0] / self.batch_size)
             epoch_bar = trange(epochs)
             mi_ema = 0
             for epoch in epoch_bar:
                 batch_bar = trange(n_batchs)
                 for i in batch_bar:
-                    x_batch = x_data[i * batch_size:(i + 1) * batch_size]
-                    z_batch = z_data[i * batch_size:(i + 1) * batch_size]
+                    x_batch = x_data[i * self.batch_size:(i + 1) * self.batch_size]
+                    z_batch = z_data[i * self.batch_size:(i + 1) * self.batch_size]
                     feed_dict = {x_ph: x_batch, z_ph: z_batch}
                     if epoch + i == 0:
                         _ = sess.run(tf.global_variables_initializer(), feed_dict=feed_dict)
