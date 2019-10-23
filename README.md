@@ -26,7 +26,8 @@ To define an estimator, one needs to provide a few arguments.
                                      dim_z = ...,
                                      batch_size= ...,
                                      critic_layers=[256, 256, 256],
-                                     critic_lr=1e-4, critic_activation='relu',
+                                     critic_lr=1e-4, 
+                                     critic_activation='relu',
                                      critic_type='joint',
                                      ema_decay=0.99,
                                      negative_samples=1)
@@ -49,7 +50,8 @@ For simple MI estimation between two random variables:
                                      dim_z = [dim_z],
                                      batch_size= 128,
                                      critic_layers=[256, 256, 256],
-                                     critic_lr=1e-4, critic_activation='relu',
+                                     critic_lr=1e-4, 
+                                     critic_activation='relu',
                                      critic_type='joint',
                                      ema_decay=0.99,
                                      negative_samples=1)
@@ -71,7 +73,8 @@ For use in a Tensorflow graph (as a regulazation term for instance)
                                      dim_z = [dim],
                                      batch_size= 128,
                                      critic_layers=[256, 256, 256],
-                                     critic_lr=1e-4, critic_activation='relu',
+                                     critic_lr=1e-4, 
+                                     critic_activation='relu',
                                      critic_type='joint',
                                      ema_decay=0.99,
                                      negative_samples=1)
