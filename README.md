@@ -46,9 +46,18 @@ This implementation offers two main functionalities that fit two use cases:
       
       x = tf.placeholder(shape=[batch_size, dim_x], tf.float32)
       z = tf.placeholder(shape=[batch_size, dim_x], tf.float32)
-      mi_regularization_term = my_mi_estimator(x, z)
+      estimator_train_op, estimator_quantities = my_mi_estimator(x, z)
       
-      loss = loss_unregularized + beta * mi_regularization_term
+      loss = loss_unregularized + beta * estimator_quantities['mi_for_grads']
+      
+      main_train_op = optimizer.minimize(loss, var_list=...)
+    
+      ... 
+      
+      # Perfom main training operation to optimize loss
+      sess.run([main_train_op], feed_dict={x: ?, z= ?, ...})
+      # Then update estimator 
+      sess.run(estimator_train_op, feed_dict={x: ?, z= ?})   
   ```
  
 
