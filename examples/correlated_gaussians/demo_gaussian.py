@@ -8,7 +8,7 @@ import argparse
 import matplotlib.pyplot as plt
 import sys
 sys.path.append("../../")
-from regularizers import mi_estimator
+from Mi_estimator import Mi_estimator
 
 def get_args():
 
@@ -79,7 +79,7 @@ def run(args):
     estimated_mis = []
     for rho in rho_values:
         x, z, mi = generate_correlated_gaussian(args.data_size, rho, args.dim_x[0])
-        regularizers = mi_estimator(args.regularizer, args.critic_layers, args.critic_lr, args.critic_activation, args.critic_type, args.ema_decay, args.negative_samples)
+        regularizers = Mi_estimator(args.regularizer, args.critic_layers, args.critic_lr, args.critic_activation, args.critic_type, args.ema_decay, args.negative_samples)
         estimated_mis.append(regularizers.fit(x, z, args.batch_size, args.epochs, mi))
         true_mis.append(mi)
     if not os.path.exists(args.plot_dir):

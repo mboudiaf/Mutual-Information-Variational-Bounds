@@ -15,7 +15,7 @@ from nets import G_mlp, D_mlp
 from datas import *
 from tqdm import trange
 sys.path.append("../../")
-from regularizers import mi_estimator
+from Mi_estimator import Mi_estimator
 
 
 def get_args():
@@ -242,7 +242,7 @@ if __name__ == '__main__':
     random_state = np.random.RandomState(args.seed)
     dic = vars(args)
     if args.regularizer != "none":
-        regularizer = mi_estimator(args.regularizer, args.critic_layers, args.critic_lr, args.critic_activation, args.critic_type, args.ema_decay, args.negative_samples)
+        regularizer = Mi_estimator(args.regularizer, args.critic_layers, args.critic_lr, args.critic_activation, args.critic_type, args.ema_decay, args.negative_samples)
         sample_dir = '{}/{}_reg={}_'.format(args.plot_dir, args.data_name, args.regularizer) + '-'.join(["{}:{}".format(key, dic[key]) for key in labels_test_params])
     else:
         sample_dir = '{}/{}_seed={}'.format(args.plot_dir, args.data_name, args.seed)
