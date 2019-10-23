@@ -26,7 +26,7 @@ pip3 install -r requirements.txt
 
 ### Defining the estimator
 
-<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/graph_init.png" width="200">
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_init.png" width=400>
 
 To define an estimator, one need no provide two arguments. The first is args and contains all the required information about the critic network. The second is simply the regularization name. Concretly, you can follow this scheme:
   ```python
@@ -39,7 +39,7 @@ To define an estimator, one need no provide two arguments. The first is args and
   This implementation offers two main functionalities that fit two use cases:
  ### Measuring the MI between static data
  
-<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/graph_fit.png" width="200">
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_fit.png" width=400>
 For simple MI estimation between two random variables:
 
   ```python
@@ -53,7 +53,7 @@ For simple MI estimation between two random variables:
 
 ### Using MI as a regularizer in TensorFlow graph
 
-<img src="https://github.com/mboudiaf/Variational-Bound-Method/blob/master/screens/graph_call.png" width="200">
+<img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_call.png" width=400>
 For use in a Tensorflow graph (as a regulazation term for instance)
 
   ```python
