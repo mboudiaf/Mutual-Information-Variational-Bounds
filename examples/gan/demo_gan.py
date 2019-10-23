@@ -54,8 +54,8 @@ def get_args():
         help='Regularization strength')
     parser.add_argument('--scheduling', type=float, default=400,
         help='If one wishes to remove regularization from objectives after ? epochs')
-    parser.add_argument('--seed', type=int, default=0,
-        help='If one wishes to remove regularization from objectives after ? epochs')
+    parser.add_argument('--seed', type=int, default=1234,
+        help='Seed for the graph')
     
 
     
