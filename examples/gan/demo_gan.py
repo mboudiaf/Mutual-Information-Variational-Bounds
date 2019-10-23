@@ -43,7 +43,6 @@ def get_args():
         help='Beta1 parameter used in AdamOptimizer for the generator')
     parser.add_argument('--batch_norm', type=bool, default=True,
         help='Whether or not to use batch norm in the generator')
-    
     # Test params
     parser.add_argument('--beta', type=float, default=1,
         help='Regularization strength')
@@ -87,9 +86,9 @@ def get_args():
     return args
 
 def sample_z(random_state, m, n):
-    out = random_state.uniform(-1., 1., size=[m, n])
-    return out
-    #return random_state.randn(m, n)
+    #out = random_state.uniform(-1., 1., size=[m, n])
+    #return out
+    return random_state.randn(m, n)
 
 def perform_adaptive_clipping(regul_term, variables, grad_upper_bound):
     g_r = tf.gradients(regul_term, variables)

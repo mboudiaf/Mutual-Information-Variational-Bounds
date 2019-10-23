@@ -51,9 +51,12 @@ class mi_regularizer(object):
             Must only be used to get a better gradient estimate of the MI.
         """
         T_joint, T_product = self.critic(x, z)
-        E_joint = 1/self.batch_size * tf.reduce_sum(T_joint)
-        E_product = 1 / (np.e*(np.prod(T_product.get_shape().as_list())-self.batch_size)) * (tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
-        mi =  E_joint - E_product
+        E_joint = 1 / self.batch_size * tf.reduce_sum(T_joint)
+        print('=============')
+        print(T_product.get_shape().as_list()[1])
+        print('=============')
+        E_product = 1 / (np.e * self.batch_size * (T_product.get_shape().as_list()[1] - 1)) * (tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
+        mi = E_joint - E_product
         mi_for_grads = mi
 
         return mi, mi_for_grads
@@ -82,13 +85,13 @@ class mi_regularizer(object):
         """
         T_joint, T_product = self.critic(x, z)
 
-        E_joint = 1/self.batch_size * tf.reduce_sum(T_joint)
-        E_product = np.log(1 / (np.prod(T_product.get_shape().as_list()) - self.batch_size)) + tf.log(tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
+        E_joint = 1 / self.batch_size * tf.reduce_sum(T_joint)
+        E_product = np.log(1 / self.batch_size * (T_product.get_shape().as_list()[1] - 1)) + tf.log(tf.reduce_sum(tf.exp(T_product)) - self.batch_size)
         mi = E_joint - E_product
 
         ema_denominator = tf.Variable(tf.exp(tf.reduce_logsumexp(T_product)))
         ema_denominator -= (1 - self.ema_decay) * (ema_denominator - tf.exp(tf.reduce_logsumexp(T_product)))
-        mi_for_grads = E_joint - 1/tf.stop_gradient(ema_denominator)*tf.exp(tf.reduce_logsumexp(T_product))
+        mi_for_grads = E_joint - 1 / tf.stop_gradient(ema_denominator) * tf.exp(tf.reduce_logsumexp(T_product))
 
         return mi, mi_for_grads
 
