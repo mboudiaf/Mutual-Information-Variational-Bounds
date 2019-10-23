@@ -28,7 +28,14 @@ pip3 install -r requirements.txt
 
 <img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_init.png" width=400>
 
-To define an estimator, one need no provide two arguments. The first is args and contains all the required information about the critic network. The second is simply the regularization name. Concretly, you can follow this scheme:
+To define an estimator, one need to provide a few arguments. 
+  ```python
+      args = {'critic_lr': ...,
+              'critic_lr': ...}
+      my_mi_estimator = mi_estimator(args, estimation method)
+  ```
+
+The second is simply the regularization name. Concretly, you can follow this scheme:
   ```python
       from estimator import mi_estimator
 
@@ -37,6 +44,7 @@ To define an estimator, one need no provide two arguments. The first is args and
       my_mi_estimator = mi_estimator(args, estimation method)
   ```
   This implementation offers two main functionalities that fit two use cases:
+  
  ### Measuring the MI between static data
  
 <img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_fit.png" width=400>
