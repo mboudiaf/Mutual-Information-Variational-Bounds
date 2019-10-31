@@ -61,7 +61,7 @@ For simple MI estimation between two random variables:
 ### Using MI as a regularizer in TensorFlow graph
 
 <img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/graph_call.png" width=400>
-For use in a Tensorflow graph (as a regulazation term for instance)
+For use in a Tensorflow graph (as a regulazation term for instance).
 
   ```python
       import tensorflow as tf
@@ -137,6 +137,15 @@ The most interesting use case of these bounds is in the context of mutual inform
 ```
 loss_regularized = loss_gan - beta * I(X;Z)
 ```
+### Use adaptive gradient clipping !!
+A naive differentiation of the previously defined loss_regularized term will probably fail to yield the expected result. A very probable reason for that is that I(X;Z) will most likely have gradients whose scale are much larger than those from the loss_gan. In order to maintain a certain balance in gradients' scale, on must use adaptive gradient clipping proposed in [1]. This simple trick consists in scaling the MI term such that its gradient norm doesn't exceed the one from the original loss. Concretely, one must instead minimize:
+
+```
+scale = min( ||G(loss)||, ||G(I(X;Z))|| ) / ||G(I(X;Z))||
+loss_regularized = loss_gan - beta * scale * I(X;Z)
+```
+where G(.) defines the gradient operator with respect to specified parameters.
+
 We provide a simple example in 2D referred to as "25 gaussians experiments" where the target distribution is:
 
 <img src="https://github.com/mboudiaf/Mutual-Information-Variational-Bounds/blob/master/screens/gan_target.png" width="250">
